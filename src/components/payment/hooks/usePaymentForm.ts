@@ -6,12 +6,12 @@ import { OrderData, CreateOrderResponse } from '../types';
 export const usePaymentForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [orderData, setOrderData] = useState<OrderData>({
-    from: 'USD',
-    to: 'USDT',
+    from: '',
+    to: '',
     amount: '0',
     address: '',
-    country: 'US',
-    email: 'test@example.com',
+    country: '',
+    email: '',
   });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);

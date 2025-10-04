@@ -3,7 +3,7 @@
 interface Currency {
   value: string;
   label: string;
-  image?: string; // آدرس عکس ارز
+  image?: string;
 }
 import { useEffect } from 'react';
 import { useState } from 'react';
@@ -20,9 +20,24 @@ interface Step1Props {
 }
 
 export default function Step1CurrencySelection({ data, onChange, onNext }: Step1Props) {
-  const [showFiatDropdown, setShowFiatDropdown] = useState(false);
-  const [showCryptoDropdown, setShowCryptoDropdown] = useState(false);
-  const { fiatCurrencies, cryptoCurrencies, loading, fetchCurrencies, error, setError, fetchError } = useCurrencyStore();
+  const {
+    fiatCurrencies,
+    cryptoCurrencies,
+    loading,
+    fetchError,
+    showFiatDropdown,
+    showCryptoDropdown,
+    fromTouched,
+    toTouched,
+    amountTouched,
+    error,
+    fetchCurrencies,
+    setError,
+    toggleFiatDropdown,
+    toggleCryptoDropdown,
+    setTouched,
+    setCurrency,
+  } = useCurrencyStore();
 
   function uniqueByValue(arr: Currency[]) {
     const seen = new Set<string>();
@@ -40,13 +55,18 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
 
   useEffect(() => {
     const newError: { from?: string; to?: string; amount?: string } = {};
-    if (!data.from) newError.from = 'Please select a fiat currency.';
-    if (!data.to) newError.to = 'Please select a crypto currency.';
-    if (data.amount === undefined || data.amount === '0' || Number(data.amount) < 1) newError.amount = 'Please enter a valid amount (min 1).';
+    if (!data.from && fromTouched) newError.from = 'Please select a fiat currency.';
+    if (!data.to && toTouched) newError.to = 'Please select a crypto currency.';
+    if (amountTouched) {
+      if (!data.amount || isNaN(Number(data.amount)) || Number(data.amount) < 1) {
+        newError.amount = 'Please enter a valid amount (min 1).';
+      }
+    }
     setError(newError);
-  }, [data.from, data.to, data.amount, setError]);
+  }, [data.from, data.to, data.amount, amountTouched, fromTouched, toTouched, setError]);
 
-  const isValid = Object.keys(error).length === 0 && !loading && fiatCurrencies.length > 0 && cryptoCurrencies.length > 0;
+  const amountIsValid = !!data.amount && !isNaN(Number(data.amount)) && Number(data.amount) >= 1;
+  const isValid = !loading && fiatCurrencies.length > 0 && cryptoCurrencies.length > 0 && !!data.from && !!data.to && amountIsValid && Object.keys(error).length === 0;
 
   // Validate amount onBlur and onNext
   const validateAmount = () => {
@@ -67,6 +87,7 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
         value,
       }
     } as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>);
+    setCurrency(type, value);
   };
 
   return (
@@ -88,49 +109,43 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
         <div className="mb-5 text-center text-red-400">{fetchError}</div>
       )}
 
-  <div className="mb-5 relative z-20" style={{ position: 'relative' }}>
-        <label className="paylabel">Pay With</label>
-        <div style={{ position: 'relative', zIndex: 50 }}>
+  <div className={`mb-5 relative ${!showFiatDropdown ? "z-20" : ""}`}>
+    <label className="paylabel relative z-[100005]">Pay With</label>
+        <div className={`relative ${showFiatDropdown ? 'z-[99999]' : (showCryptoDropdown ? 'z-20' : 'z-50')}`}>
           <div
-            className="payipt flex items-center justify-between cursor-pointer select-none"
-            onClick={() => setShowFiatDropdown((v) => !v)}
-            style={{ position: 'relative', zIndex: 100 }}
+            onClick={() => {
+              toggleFiatDropdown();
+              setTouched('from');
+            }}
+            className={`payipt flex items-center justify-between cursor-pointer select-none relative ${showFiatDropdown ? 'z-[100000]' : (showCryptoDropdown ? 'z-30' : 'z-[100]')}`}
           >
-            {/* نمایش عکس ارز انتخاب شده */}
-            {(() => {
-              const selected = fiatCurrencies.find(c => c.value === data.from);
-              if (selected && selected.image) {
-                return <Image src={selected.image} alt={selected.label} width={24} height={24} className="rounded-full mr-2" />;
-              }
-              return null;
-            })()}
-            <span className={data.from ? 'text-white' : 'text-gray-400'}>
-              {data.from ? (fiatCurrencies.find(c => c.value === data.from)?.label || data.from) : 'please select something...'}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className={data.from ? 'text-white' : 'text-gray-400'}>
+                {data.from ? (fiatCurrencies.find(c => c.value === data.from)?.label || data.from) : 'please select'}
+              </span>
+            </div>
             {showFiatDropdown ? <ChevronUp className="w-5 h-5 text-white" /> : <ChevronDown className="w-5 h-5 text-white" />}
           </div>
           {showFiatDropdown && (
             <>
               <div
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-                style={{ zIndex: 10 }}
-                onClick={() => setShowFiatDropdown(false)}
+                onClick={toggleFiatDropdown}
+                className={`${showFiatDropdown ? 'z-[99990]' : 'z-10'} fixed inset-0 bg-black/40 backdrop-blur-sm`}
               />
               <div
-                style={{ maxHeight: 220, position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 200 }}
-                className="rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-y-auto mt-2"
+                className={`${showFiatDropdown ? 'z-[100001]' : 'z-[200]'} absolute top-full mt-2 left-0 right-0 max-h-[220px] rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-y-auto`}
               >
+                {/* placeholder first item */}
                 {uniqueByValue(fiatCurrencies).map((currency: Currency) => (
                   <div
                     key={currency.value}
-                    className={`transition-all cursor-pointer px-4 py-2 border-b border-gray-800 last:border-b-0 flex items-center gap-2 justify-between`
+                    className={`transition-all cursor-pointer px-4 py-2 border-b border-gray-800 last:border-b-0 flex items-center gap-2`
                       + (data.from === currency.value ? ' bg-pink-600/80 text-white font-bold shadow-inner' : ' hover:bg-gray-800 text-gray-200')}
                     onClick={() => {
                       handleCurrencyClick('from', currency.value);
-                      setShowFiatDropdown(false);
+                      toggleFiatDropdown();
                     }}
                   >
-                    {/* نمایش عکس ارز در لیست */}
                     {currency.image && (
                       <Image src={currency.image} alt={currency.label} width={24} height={24} className="rounded-full mr-2" />
                     )}
@@ -142,55 +157,58 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
             </>
           )}
         </div>
-        {error.from && <div className="text-xs text-red-400 mt-1">{error.from}</div>}
+  {error.from && <div className="text-xs text-red-400 mt-1 relative z-[100005]">{error.from}</div>}
       </div>
 
-      <div className="mb-5 relative z-20" style={{ position: 'relative' }}>
-        <label className="paylabel">Receive</label>
-        <div style={{ position: 'relative', zIndex: 20 }}>
+  <div className="mb-5 relative z-20">
+    <label className="paylabel relative z-[100005]">Receive</label>
+        <div className={`relative ${showCryptoDropdown ? 'z-[99999]' : (showFiatDropdown ? 'z-20' : 'z-50')}`}>
           <div
-            className="payipt flex items-center justify-between cursor-pointer select-none"
-            onClick={() => setShowCryptoDropdown((v) => !v)}
-            style={{ position: 'relative', zIndex: 10 }}
+            onClick={() => {
+              toggleCryptoDropdown();
+              setTouched('to');
+            }}
+            className={`payipt flex items-center justify-between cursor-pointer select-none relative ${showCryptoDropdown ? 'z-[100000]' : (showFiatDropdown ? 'z-30' : 'z-[60]')}`}
           >
-            <span className={data.to ? 'text-white' : 'text-gray-400'}>
-              {data.to ? (cryptoCurrencies.find(c => c.value === data.to)?.label || data.to) : 'please select something...'}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className={data.to ? 'text-white' : 'text-gray-400'}>
+                {data.to ? (cryptoCurrencies.find(c => c.value === data.to)?.label || data.to) : 'please select'}
+              </span>
+            </div>
             {showCryptoDropdown ? <ChevronUp className="w-5 h-5 text-white" /> : <ChevronDown className="w-5 h-5 text-white" />}
           </div>
           {showCryptoDropdown && (
             <>
               <div
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-                style={{ zIndex: 10 }}
-                onClick={() => setShowCryptoDropdown(false)}
+                onClick={toggleCryptoDropdown}
+                className={`${showCryptoDropdown ? 'z-[99990]' : 'z-10'} fixed inset-0 bg-black/40 backdrop-blur-sm`}
               />
               <div
-                style={{ maxHeight: 220, position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 70 }}
-                className="rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-y-auto mt-2"
+                className={`${showCryptoDropdown ? 'z-[100001]' : 'z-[70]'} absolute top-full mt-2 left-0 right-0 max-h-[220px] rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-y-auto`}
               >
-                {uniqueByValue(cryptoCurrencies).map((currency: Currency) => (
-                  <div
-                    key={currency.value}
-                    className={`transition-all cursor-pointer px-4 py-2 border-b border-gray-800 last:border-b-0 flex items-center justify-between`
-                      + (data.to === currency.value ? ' bg-pink-600/80 text-white font-bold shadow-inner' : ' hover:bg-gray-800 text-gray-200')}
-                    onClick={() => {
-                      handleCurrencyClick('to', currency.value);
-                      setShowCryptoDropdown(false);
-                    }}
-                  >
-                    {currency.image && (
-                      <Image src={currency.image} alt={currency.label} width={24} height={24} className="rounded-full mr-2" />
-                    )}
-                    <span>{currency.label}</span>
-                    {data.to === currency.value && <span className="ml-2 text-xs bg-pink-900 px-2 py-1 rounded-full">Selected</span>}
-                  </div>
-                ))}
+              {/* placeholder first item */}
+              {uniqueByValue(cryptoCurrencies).map((currency: Currency) => (
+                <div
+                  key={currency.value}
+                  className={`transition-all cursor-pointer px-4 py-2 border-b border-gray-800 last:border-b-0 flex items-center gap-2`
+                    + (data.to === currency.value ? ' bg-pink-600/80 text-white font-bold shadow-inner' : ' hover:bg-gray-800 text-gray-200')}
+                  onClick={() => {
+                    handleCurrencyClick('to', currency.value);
+                    toggleCryptoDropdown();
+                  }}
+                >
+                  {currency.image && (
+                    <Image src={currency.image} alt={currency.label} width={24} height={24} className="rounded-full mr-2" />
+                  )}
+                  <span>{currency.label}</span>
+                  {data.to === currency.value && <span className="ml-2 text-xs bg-pink-900 px-2 py-1 rounded-full">Selected</span>}
+                </div>
+              ))}
               </div>
             </>
           )}
         </div>
-        {error.to && <div className="text-xs text-red-400 mt-1">{error.to}</div>}
+  {error.to && <div className="text-xs text-red-400 mt-1 relative z-[100005]">{error.to}</div>}
       </div>
 
       <div className="mb-10">
@@ -199,9 +217,13 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
           id="amount"
           name="amount"
           type="number"
-          value={data.amount ?? '0'}
+          value={data.amount ?? ''}
           onChange={onChange}
-          onBlur={() => validateAmount()}
+          onFocus={() => setTouched('amount')}
+          onBlur={() => {
+            setTouched('amount');
+            validateAmount();
+          }}
           placeholder="Enter amount"
           min="1"
           max="1000"
