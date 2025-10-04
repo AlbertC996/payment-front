@@ -1,15 +1,10 @@
 'use client';
-
-import { Gift, ArrowRight, ArrowLeft } from 'lucide-react';
 import { usePaymentForm } from './payment/hooks/usePaymentForm';
 import { StepIndicator } from './payment/StepIndicator';
-import { Step1CurrencySelection } from './payment/Step1CurrencySelection';
-import { Step2WalletInfo } from './payment/Step2WalletInfo'; //    
-import { Step3ReviewPay } from './payment/Step3ReviewPay'; //    
+import Step1CurrencySelection from './payment/Step1CurrencySelection';
+import { Step2WalletInfo } from './payment/Step2WalletInfo';
+import { Step3ReviewPay } from './payment/Step3ReviewPay';
 import { truncateWalletAddress } from './payment/utils';
-
-//  ‌    
-const buttonStyles = "flex-1 py-3.5 rounded-full font-semibold text-sm border border-[#222025] bg-gradient-to-r from-[#3a373e] to-[#222025] text-[#e34874] shadow-[0_0_25px_rgba(10,20,50,0.7),0_0_10px_rgba(255,255,255,0.5)] text-shadow-[0_0_8px_#e34874] hover:text-[#ffebf8] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50";
 
 export default function PaymentForm() {
   const {
@@ -44,7 +39,7 @@ export default function PaymentForm() {
             onSubmit={handleSubmit}
             onBack={prevStep}
             truncateAddress={truncateWalletAddress}
-            buttonStyles={buttonStyles}
+            buttonStyles="paybtnStyle"
           />
         )}
 

@@ -8,7 +8,7 @@ export const usePaymentForm = () => {
   const [orderData, setOrderData] = useState<OrderData>({
     from: 'USD',
     to: 'USDT',
-    amount: '10',
+    amount: '0',
     address: '',
     country: 'US',
     email: 'test@example.com',
