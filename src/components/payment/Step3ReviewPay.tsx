@@ -63,14 +63,14 @@ export const Step3ReviewPay = ({ data, loading, onSubmit, onBack, truncateAddres
             </div>
             <div className="flex gap-5 w-full justify-center">
               <button
-                onClick={(e) => { setShowConfirm(false); }}
-                className="paybtn w-32 paybtnHF"
-              >No</button>
-              <button
                 onClick={onSubmit}
                 disabled={loading}
                 className="paybtn w-32 paybtnHF"
               >Yes</button>
+              <button
+                onClick={(e) => { setShowConfirm(false); }}
+                className="paybtn w-32 paybtnHF"
+              >No</button>
             </div>
           </div>
         )}

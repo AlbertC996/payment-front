@@ -31,13 +31,26 @@ export const usePaymentForm = () => {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/changenow/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...orderData, externalUserId: `user-${Date.now()}` }),
+        body: JSON.stringify({
+          currencyFrom: orderData.from,
+          currencyTo: orderData.to,
+          amount: orderData.amount,
+          address: orderData.address,
+          externalUserId: `user-${Date.now()}`,
+          email: orderData.email,
+          country: orderData.country,
+        }),
+
       });
 
       const data: CreateOrderResponse = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.details || 'Failed to create order');
+        throw new Error(
+          typeof data.details === 'object'
+            ? JSON.stringify(data.details)
+            : data.details || 'Failed to create order',
+        );
       }
 
       setResult(`Redirecting to secure payment page...\n\nIf you are not redirected automatically, please click the link:\n${data.payUrl}`);
