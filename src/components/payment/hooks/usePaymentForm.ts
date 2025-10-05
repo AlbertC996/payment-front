@@ -26,21 +26,13 @@ export const usePaymentForm = () => {
     setLoading(true);
     setError(null);
     setResult(null);
+    console.log(orderData)
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/changenow/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currencyFrom: orderData.from,
-          currencyTo: orderData.to,
-          amount: orderData.amount,
-          address: orderData.address,
-          externalUserId: `user-${Date.now()}`,
-          email: orderData.email,
-          country: orderData.country,
-        }),
-
+        body: JSON.stringify({...orderData, externalUserId: `user-${Date.now()}`}),
       });
 
       const data: CreateOrderResponse = await response.json();
