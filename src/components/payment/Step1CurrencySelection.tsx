@@ -6,7 +6,6 @@ interface Currency {
   image?: string;
 }
 import { useEffect } from 'react';
-import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { OrderData } from './types';
 import { ArrowRight, CreditCard } from 'lucide-react';
@@ -37,6 +36,8 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
     toggleCryptoDropdown,
     setTouched,
     setCurrency,
+  closeFiatDropdown,
+  closeCryptoDropdown,
   } = useCurrencyStore();
 
   function uniqueByValue(arr: Currency[]) {
@@ -49,9 +50,10 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
   }
 
   useEffect(() => {
-    fetchCurrencies();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (fiatCurrencies.length === 0 && cryptoCurrencies.length === 0) {
+      fetchCurrencies();
+    }
+  }, [fiatCurrencies.length, cryptoCurrencies.length, fetchCurrencies]);
 
   useEffect(() => {
     const newError: { from?: string; to?: string; amount?: string } = {};
@@ -120,6 +122,23 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
             className={`payipt flex items-center justify-between cursor-pointer select-none relative ${showFiatDropdown ? 'z-[100000]' : (showCryptoDropdown ? 'z-30' : 'z-[100]')}`}
           >
             <div className="flex items-center gap-3">
+              {data.from && (
+                (() => {
+                  const selected = fiatCurrencies.find(c => c.value === data.from);
+                  if (selected && selected.image) {
+                    return (
+                      <Image
+                        src={selected.image}
+                        alt={selected.label || "currency"}
+                        width={24}
+                        height={24}
+                        className="rounded-full mr-2"
+                      />
+                    );
+                  }
+                  return null;
+                })()
+              )}
               <span className={data.from ? 'text-white' : 'text-gray-400'}>
                 {data.from ? (fiatCurrencies.find(c => c.value === data.from)?.label || data.from) : 'please select'}
               </span>
@@ -129,16 +148,16 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
           {showFiatDropdown && (
             <>
               <div
-                onClick={toggleFiatDropdown}
+                onClick={closeFiatDropdown}
                 className={`${showFiatDropdown ? 'z-[99990]' : 'z-10'} fixed inset-0 bg-black/40 backdrop-blur-sm`}
               />
               <div
                 className={`${showFiatDropdown ? 'z-[100001]' : 'z-[200]'} absolute top-full mt-2 left-0 right-0 max-h-[220px] rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-y-auto`}
               >
                 {/* placeholder first item */}
-                {uniqueByValue(fiatCurrencies).map((currency: Currency) => (
+                {uniqueByValue(fiatCurrencies).map((currency: Currency, idx: number) => (
                   <div
-                    key={currency.value}
+                    key={currency.value ? currency.value : `${currency.label}-${idx}`}
                     className={`transition-all cursor-pointer px-4 py-2 border-b border-gray-800 last:border-b-0 flex items-center gap-2`
                       + (data.from === currency.value ? ' bg-pink-600/80 text-white font-bold shadow-inner' : ' hover:bg-gray-800 text-gray-200')}
                     onClick={() => {
@@ -147,9 +166,9 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
                     }}
                   >
                     {currency.image && (
-                      <Image src={currency.image} alt={currency.label} width={24} height={24} className="rounded-full mr-2" />
+                      <Image src={currency.image} alt={currency.label || "currency"} width={24} height={24} className="rounded-full mr-2" />
                     )}
-                    <span>{currency.label}</span>
+                    <span>{currency.label || "?"}</span>
                     {data.from === currency.value && <span className="ml-2 text-xs bg-pink-900 px-2 py-1 rounded-full">Selected</span>}
                   </div>
                 ))}
@@ -171,6 +190,23 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
             className={`payipt flex items-center justify-between cursor-pointer select-none relative ${showCryptoDropdown ? 'z-[100000]' : (showFiatDropdown ? 'z-30' : 'z-[60]')}`}
           >
             <div className="flex items-center gap-3">
+              {data.to && (
+                (() => {
+                  const selected = cryptoCurrencies.find(c => c.value === data.to);
+                  if (selected && selected.image) {
+                    return (
+                      <Image
+                        src={selected.image}
+                        alt={selected.label || "currency"}
+                        width={24}
+                        height={24}
+                        className="rounded-full mr-2"
+                      />
+                    );
+                  }
+                  return null;
+                })()
+              )}
               <span className={data.to ? 'text-white' : 'text-gray-400'}>
                 {data.to ? (cryptoCurrencies.find(c => c.value === data.to)?.label || data.to) : 'please select'}
               </span>
@@ -180,16 +216,16 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
           {showCryptoDropdown && (
             <>
               <div
-                onClick={toggleCryptoDropdown}
+                onClick={closeCryptoDropdown}
                 className={`${showCryptoDropdown ? 'z-[99990]' : 'z-10'} fixed inset-0 bg-black/40 backdrop-blur-sm`}
               />
               <div
                 className={`${showCryptoDropdown ? 'z-[100001]' : 'z-[70]'} absolute top-full mt-2 left-0 right-0 max-h-[220px] rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-y-auto`}
               >
               {/* placeholder first item */}
-              {uniqueByValue(cryptoCurrencies).map((currency: Currency) => (
+              {uniqueByValue(cryptoCurrencies).map((currency: Currency, idx: number) => (
                 <div
-                  key={currency.value}
+                  key={currency.value ? currency.value : `${currency.label}-${idx}`}
                   className={`transition-all cursor-pointer px-4 py-2 border-b border-gray-800 last:border-b-0 flex items-center gap-2`
                     + (data.to === currency.value ? ' bg-pink-600/80 text-white font-bold shadow-inner' : ' hover:bg-gray-800 text-gray-200')}
                   onClick={() => {
@@ -198,9 +234,9 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
                   }}
                 >
                   {currency.image && (
-                    <Image src={currency.image} alt={currency.label} width={24} height={24} className="rounded-full mr-2" />
+                    <Image src={currency.image} alt={currency.label || "currency"} width={24} height={24} className="rounded-full mr-2" />
                   )}
-                  <span>{currency.label}</span>
+                  <span>{currency.label || "?"}</span>
                   {data.to === currency.value && <span className="ml-2 text-xs bg-pink-900 px-2 py-1 rounded-full">Selected</span>}
                 </div>
               ))}

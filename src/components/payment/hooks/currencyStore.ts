@@ -25,6 +25,25 @@ interface CurrencyStore {
   setCurrency: (type: "from" | "to", value: string) => void;
   setFetchError: (msg: string | null) => void;
   resetState: () => void;
+  closeFiatDropdown: () => void;
+  closeCryptoDropdown: () => void;
+}
+
+export interface CurrencyApi {
+  ticker: string;
+  name: string;
+  image: string;
+  hasExternalId: boolean;
+  isExtraIdSupported: boolean;
+  isFiat: boolean;
+  featured: boolean;
+  isStable: boolean;
+  supportsFixedRate: boolean;
+  network: string;
+  tokenContract?: string | null;
+  buy: boolean;
+  sell: boolean;
+  legacyTicker: string;
 }
 
 export const useCurrencyStore = create<CurrencyStore>((set) => ({
@@ -43,9 +62,19 @@ export const useCurrencyStore = create<CurrencyStore>((set) => ({
     set({ loading: true });
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/changenow/currencies`);
-      const data: Currency[] = await res.json();
-      // Process and set currencies here as needed...
-      set({ fiatCurrencies: data.filter(c => c.isFiat), cryptoCurrencies: data.filter(c => !c.isFiat), fetchError: null });
+      const data = await res.json();
+      // Map API data to Currency type
+      const mapped = (data as CurrencyApi[]).map((c) => ({
+        value: c.ticker || c.legacyTicker,
+        label: c.name,
+        image: c.image,
+        isFiat: c.isFiat
+      }));
+      set({
+        fiatCurrencies: mapped.filter((c: { isFiat: boolean }) => c.isFiat),
+        cryptoCurrencies: mapped.filter((c: { isFiat: boolean }) => !c.isFiat),
+        fetchError: null
+      });
     } catch (error) {
       set({ fetchError: "Failed to load currencies. Please refresh." });
     } finally {
@@ -54,14 +83,12 @@ export const useCurrencyStore = create<CurrencyStore>((set) => ({
   },
 
   setError: (err) => set({ error: err }),
-
   toggleFiatDropdown: () => set((state) => ({ showFiatDropdown: !state.showFiatDropdown })),
   toggleCryptoDropdown: () => set((state) => ({ showCryptoDropdown: !state.showCryptoDropdown })),
-
+  closeFiatDropdown: () => set({ showFiatDropdown: false }),
+  closeCryptoDropdown: () => set({ showCryptoDropdown: false }),
   setTouched: (field) => set((state) => ({ [`${field}Touched`]: true })),
-  
   setCurrency: (type, value) => set({ [type]: value }),
-
   setFetchError: (msg) => set({ fetchError: msg }),
 
   resetState: () => set({

@@ -1,5 +1,6 @@
 import { OrderData } from './types';
 import { Gift, ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
 
 interface Step3Props {
   data: OrderData;
@@ -11,6 +12,7 @@ interface Step3Props {
 }
 
 export const Step3ReviewPay = ({ data, loading, onSubmit, onBack, truncateAddress, buttonStyles }: Step3Props) => {
+  const [showConfirm, setShowConfirm] = useState(false);
   return (
     <>
       <div className="flex justify-center mb-6">
@@ -39,12 +41,39 @@ export const Step3ReviewPay = ({ data, loading, onSubmit, onBack, truncateAddres
       </div>
 
       <div className="flex gap-5">
-        <button onClick={onBack} className={buttonStyles}>
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-        <button onClick={onSubmit} disabled={loading} className={buttonStyles}>
-          {loading ? 'Processing...' : 'Pay Now'}
-        </button>
+        {!showConfirm ? (
+          <>
+            <button onClick={onBack} className={buttonStyles}>
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+            <button
+              onClick={() => setShowConfirm(true)}
+              disabled={loading}
+              className={buttonStyles}
+            >
+              {loading ? 'Processing...' : 'Pay Now'}
+            </button>
+          </>
+        ) : (
+          <div className="w-full flex flex-col items-center gap-4 p-4 bg-[#23232a] rounded-xl border border-pink-700">
+            <div className="text-pink-400 text-center text-sm font-bold mb-2">
+              WARNING: You are about to make a REAL payment of {data.amount} {data.from.toUpperCase()}.
+              <br />After payment, the equivalent in {data.to.toUpperCase()} will be sent to your wallet.
+              <br />Are you sure you want to continue?
+            </div>
+            <div className="flex gap-5 w-full justify-center">
+              <button
+                onClick={(e) => { setShowConfirm(false); }}
+                className="paybtn w-32 paybtnHF"
+              >No</button>
+              <button
+                onClick={onSubmit}
+                disabled={loading}
+                className="paybtn w-32 paybtnHF"
+              >Yes</button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

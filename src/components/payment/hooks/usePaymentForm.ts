@@ -27,15 +27,6 @@ export const usePaymentForm = () => {
     setError(null);
     setResult(null);
 
-    const isConfirmed = window.confirm(
-      `WARNING: You are about to make a REAL payment of ${orderData.amount} ${orderData.from.toUpperCase()}.\n\nAfter payment, the equivalent in ${orderData.to.toUpperCase()} will be sent to your wallet.\n\nAre you sure you want to continue?`,
-    );
-
-    if (!isConfirmed) {
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/changenow/create-order`, {
         method: 'POST',
