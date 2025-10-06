@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['content-api.changenow.io'],
   },
-  output: 'export', // 👈 این خط خروجی استاتیک تولید می‌کند
+  output: 'export',
 };
 
 export default nextConfig;
