@@ -26,26 +26,34 @@ export const usePaymentForm = () => {
     setLoading(true);
     setError(null);
     setResult(null);
-    console.log(orderData)
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/changenow/create-order`, {
+      //    
+      const apiUrl = '/changenow/create-order';
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({...orderData, externalUserId: `user-${Date.now()}`}),
+        body: JSON.stringify({
+          from: orderData.from,
+          to: orderData.to,
+          amount: orderData.amount,
+          address: orderData.address,
+          externalUserId: `user-${Date.now()}`,
+          country: orderData.country,
+          paymentMethod: 'card',
+          email: orderData.email,
+        })
       });
 
       const data: CreateOrderResponse = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(
-          typeof data.details === 'object'
-            ? JSON.stringify(data.details)
-            : data.details || 'Failed to create order',
-        );
+        setError(data.details || '   ');
+        return;
       }
 
-      setResult(`Redirecting to secure payment page...\n\nIf you are not redirected automatically, please click the link:\n${data.payUrl}`);
+      setResult(`     ...\n\n          :\n${data.payUrl}`);
       setTimeout(() => {
         if (data.payUrl) {
           window.location.href = data.payUrl;
@@ -55,7 +63,7 @@ export const usePaymentForm = () => {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError(String(err));
+        setError('An unknown error occurred');
       }
     } finally {
       setLoading(false);
