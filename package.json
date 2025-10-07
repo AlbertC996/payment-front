@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "export": "Copy-Item -Path .\\out\\* -Destination ..\\payment\\public\\ -Recurse -Force"
+    "export": "powershell Remove-Item -Recurse -Force ..\\payment\\public\\*; npm run build; next export; Copy-Item -Path .\\out\\* -Destination ..\\payment\\public\\ -Recurse -Force"
   },
   "dependencies": {
     "lucide-react": "^0.544.0",

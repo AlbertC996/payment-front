@@ -28,7 +28,6 @@ export const usePaymentForm = () => {
     setResult(null);
 
     try {
-      //    
       const apiUrl = '/changenow/create-order';
 
       const response = await fetch(apiUrl, {

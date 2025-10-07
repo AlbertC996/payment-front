@@ -77,6 +77,7 @@ export const useCurrencyStore = create<CurrencyStore>((set) => ({
       });
     } catch (error) {
       set({ fetchError: "Failed to load currencies. Please refresh." });
+      console.log(error);
     } finally {
       set({ loading: false });
     }
