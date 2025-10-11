@@ -79,54 +79,6 @@ export const Step2WalletInfo = ({ data, onChange, onNext, onBack }: Step2Props) 
         )}
       </div>
 
-      <div className={`mb-5 relative ${!countryDropdown ? "z-20" : ""}`}>  
-        <label className="paylabel relative z-[100005]">Country</label>
-        <div className={`relative ${countryDropdown ? 'z-[99999]' : 'z-50'}`}>  
-          <div
-            onClick={() => setCountryDropdown(v => !v)}
-            className={`payipt flex items-center justify-between cursor-pointer select-none relative ${countryDropdown ? 'z-[100000]' : 'z-[100]'} `}
-          >
-            <div className="flex items-center gap-3">
-              <span className={selectedCountry ? 'text-white' : 'text-gray-400'}>
-                {selectedCountry ? selectedCountry.label : 'please select'}
-              </span>
-            </div>
-            {countryDropdown ? <ChevronUp className="w-5 h-5 text-white" /> : <ChevronDown className="w-5 h-5 text-white" />}
-          </div>
-          {countryDropdown && (
-            <>
-              <div
-                onClick={() => setCountryDropdown(false)}
-                className={`${countryDropdown ? 'z-[99990]' : 'z-10'} fixed inset-0 bg-black/40 backdrop-blur-sm`}
-              />
-              <div
-                className={`${countryDropdown ? 'z-[100001]' : 'z-[200]'} absolute top-full mt-2 left-0 right-0 max-h-[220px] rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-y-auto`}
-              >
-                {COUNTRIES.map((country, idx) => (
-                  <div
-                    key={country.value ? country.value : `${country.label}-${idx}`}
-                    className={`transition-all cursor-pointer px-4 py-2 border-b border-gray-800 last:border-b-0 flex items-center gap-2`
-                      + (data.country === country.value ? ' bg-pink-600/80 text-white font-bold shadow-inner' : ' hover:bg-gray-800 text-gray-200')}
-                    onClick={() => {
-                      onChange({
-                        target: {
-                          name: 'country',
-                          value: country.value,
-                        }
-                      } as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>);
-                      setCountryDropdown(false);
-                    }}
-                  >
-                    <span>{country.label}</span>
-                    {data.country === country.value && <span className="ml-2 text-xs bg-pink-900 px-2 py-1 rounded-full">Selected</span>}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
       <div className="mb-10">
         <label htmlFor="email" className="paylabel">Email (optional)</label>
         <input id="email" name="email" type="email" value={data.email} onChange={onChange} placeholder="your@email.com" className="payipt" />

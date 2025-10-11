@@ -28,7 +28,7 @@ export const usePaymentForm = () => {
     setResult(null);
 
     try {
-      const apiUrl = '/changenow/create-order';
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL ?? ""}/changenow/create-order`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',

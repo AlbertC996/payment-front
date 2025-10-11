@@ -61,7 +61,7 @@ export const useCurrencyStore = create<CurrencyStore>((set) => ({
   fetchCurrencies: async () => {
     set({ loading: true });
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/changenow/currencies`);
+      const res = await fetch(`/changenow/currencies`);
       const data = await res.json();
       // Map API data to Currency type
       const mapped = (data as CurrencyApi[]).map((c) => ({

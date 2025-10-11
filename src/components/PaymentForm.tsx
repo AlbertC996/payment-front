@@ -8,15 +8,15 @@ import { truncateWalletAddress } from './payment/utils';
 
 export default function PaymentForm() {
   const {
-    currentStep,
-    orderData,
-    loading,
-    result,
     error,
-    handleInputChange,
-    handleSubmit,
-    nextStep,
+    result,
+    loading,
+    orderData,
+    currentStep,
     prevStep,
+    nextStep,
+    handleSubmit,
+    handleInputChange,
   } = usePaymentForm();
 
   return (

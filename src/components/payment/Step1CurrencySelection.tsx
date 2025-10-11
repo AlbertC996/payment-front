@@ -11,6 +11,7 @@ import { OrderData } from './types';
 import { ArrowRight, CreditCard } from 'lucide-react';
 import { useCurrencyStore } from './hooks/currencyStore';
 import Image from 'next/image';
+import CurrencyDropdown from '../CurrencyDropdown';
 
 interface Step1Props {
   data: OrderData;
@@ -36,8 +37,8 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
     toggleCryptoDropdown,
     setTouched,
     setCurrency,
-  closeFiatDropdown,
-  closeCryptoDropdown,
+    closeFiatDropdown,
+    closeCryptoDropdown,
   } = useCurrencyStore();
 
   function uniqueByValue(arr: Currency[]) {
@@ -111,141 +112,40 @@ export default function Step1CurrencySelection({ data, onChange, onNext }: Step1
         <div className="mb-5 text-center text-red-400">{fetchError}</div>
       )}
 
-  <div className={`mb-5 relative ${!showFiatDropdown ? "z-20" : ""}`}>
-    <label className="paylabel relative z-[100005]">Pay With</label>
-        <div className={`relative ${showFiatDropdown ? 'z-[99999]' : (showCryptoDropdown ? 'z-20' : 'z-50')}`}>
-          <div
-            onClick={() => {
-              toggleFiatDropdown();
-              setTouched('from');
-            }}
-            className={`payipt flex items-center justify-between cursor-pointer select-none relative ${showFiatDropdown ? 'z-[100000]' : (showCryptoDropdown ? 'z-30' : 'z-[100]')}`}
-          >
-            <div className="flex items-center gap-3">
-              {data.from && (
-                (() => {
-                  const selected = fiatCurrencies.find(c => c.value === data.from);
-                  if (selected && selected.image) {
-                    return (
-                      <Image
-                        src={selected.image}
-                        alt={selected.label || "currency"}
-                        width={24}
-                        height={24}
-                        className="rounded-full mr-2"
-                      />
-                    );
-                  }
-                  return null;
-                })()
-              )}
-              <span className={data.from ? 'text-white' : 'text-gray-400'}>
-                {data.from ? (fiatCurrencies.find(c => c.value === data.from)?.label || data.from) : 'please select'}
-              </span>
-            </div>
-            {showFiatDropdown ? <ChevronUp className="w-5 h-5 text-white" /> : <ChevronDown className="w-5 h-5 text-white" />}
-          </div>
-          {showFiatDropdown && (
-            <>
-              <div
-                onClick={closeFiatDropdown}
-                className={`${showFiatDropdown ? 'z-[99990]' : 'z-10'} fixed inset-0 bg-black/40 backdrop-blur-sm`}
-              />
-              <div
-                className={`${showFiatDropdown ? 'z-[100001]' : 'z-[200]'} absolute top-full mt-2 left-0 right-0 max-h-[220px] rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-y-auto`}
-              >
-                {/* placeholder first item */}
-                {uniqueByValue(fiatCurrencies).map((currency: Currency, idx: number) => (
-                  <div
-                    key={currency.value ? currency.value : `${currency.label}-${idx}`}
-                    className={`transition-all cursor-pointer px-4 py-2 border-b border-gray-800 last:border-b-0 flex items-center gap-2`
-                      + (data.from === currency.value ? ' bg-pink-600/80 text-white font-bold shadow-inner' : ' hover:bg-gray-800 text-gray-200')}
-                    onClick={() => {
-                      handleCurrencyClick('from', currency.value);
-                      toggleFiatDropdown();
-                    }}
-                  >
-                    {currency.image && (
-                      <Image src={currency.image} alt={currency.label || "currency"} width={24} height={24} className="rounded-full mr-2" />
-                    )}
-                    <span>{currency.label || "?"}</span>
-                    {data.from === currency.value && <span className="ml-2 text-xs bg-pink-900 px-2 py-1 rounded-full">Selected</span>}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-  {error.from && <div className="text-xs text-red-400 mt-1 relative z-[100005]">{error.from}</div>}
-      </div>
+      <CurrencyDropdown
+        label="Pay With"
+        selectedValue={data.from}
+        options={fiatCurrencies}
+        showDropdown={showFiatDropdown}
+        loading={loading}
+        disabled={loading || !!fetchError}
+        error={error.from}
+        onToggle={() => {
+          if (!loading) toggleFiatDropdown();
+        }}
+        onSelect={(val: string) =>
+          onChange({ target: { name: "from", value: val } } as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)
+        }
+        onClose={closeFiatDropdown}
+      />
 
-  <div className="mb-5 relative z-20">
-    <label className="paylabel relative z-[100005]">Receive</label>
-        <div className={`relative ${showCryptoDropdown ? 'z-[99999]' : (showFiatDropdown ? 'z-20' : 'z-50')}`}>
-          <div
-            onClick={() => {
-              toggleCryptoDropdown();
-              setTouched('to');
-            }}
-            className={`payipt flex items-center justify-between cursor-pointer select-none relative ${showCryptoDropdown ? 'z-[100000]' : (showFiatDropdown ? 'z-30' : 'z-[60]')}`}
-          >
-            <div className="flex items-center gap-3">
-              {data.to && (
-                (() => {
-                  const selected = cryptoCurrencies.find(c => c.value === data.to);
-                  if (selected && selected.image) {
-                    return (
-                      <Image
-                        src={selected.image}
-                        alt={selected.label || "currency"}
-                        width={24}
-                        height={24}
-                        className="rounded-full mr-2"
-                      />
-                    );
-                  }
-                  return null;
-                })()
-              )}
-              <span className={data.to ? 'text-white' : 'text-gray-400'}>
-                {data.to ? (cryptoCurrencies.find(c => c.value === data.to)?.label || data.to) : 'please select'}
-              </span>
-            </div>
-            {showCryptoDropdown ? <ChevronUp className="w-5 h-5 text-white" /> : <ChevronDown className="w-5 h-5 text-white" />}
-          </div>
-          {showCryptoDropdown && (
-            <>
-              <div
-                onClick={closeCryptoDropdown}
-                className={`${showCryptoDropdown ? 'z-[99990]' : 'z-10'} fixed inset-0 bg-black/40 backdrop-blur-sm`}
-              />
-              <div
-                className={`${showCryptoDropdown ? 'z-[100001]' : 'z-[70]'} absolute top-full mt-2 left-0 right-0 max-h-[220px] rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-y-auto`}
-              >
-              {/* placeholder first item */}
-              {uniqueByValue(cryptoCurrencies).map((currency: Currency, idx: number) => (
-                <div
-                  key={currency.value ? currency.value : `${currency.label}-${idx}`}
-                  className={`transition-all cursor-pointer px-4 py-2 border-b border-gray-800 last:border-b-0 flex items-center gap-2`
-                    + (data.to === currency.value ? ' bg-pink-600/80 text-white font-bold shadow-inner' : ' hover:bg-gray-800 text-gray-200')}
-                  onClick={() => {
-                    handleCurrencyClick('to', currency.value);
-                    toggleCryptoDropdown();
-                  }}
-                >
-                  {currency.image && (
-                    <Image src={currency.image} alt={currency.label || "currency"} width={24} height={24} className="rounded-full mr-2" />
-                  )}
-                  <span>{currency.label || "?"}</span>
-                  {data.to === currency.value && <span className="ml-2 text-xs bg-pink-900 px-2 py-1 rounded-full">Selected</span>}
-                </div>
-              ))}
-              </div>
-            </>
-          )}
-        </div>
-  {error.to && <div className="text-xs text-red-400 mt-1 relative z-[100005]">{error.to}</div>}
-      </div>
+      <CurrencyDropdown
+        label="Receive"
+        selectedValue={data.to}
+        options={cryptoCurrencies}
+        showDropdown={showCryptoDropdown}
+        loading={loading}
+        disabled={loading || !!fetchError}
+        error={error.to}
+        onToggle={() => {
+          if (!loading) toggleCryptoDropdown();
+        }}
+        onSelect={(val: string) =>
+          onChange({ target: { name: "to", value: val } } as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)
+        }
+        onClose={closeCryptoDropdown}
+      />
+
 
       <div className="mb-10">
         <label htmlFor="amount" className="paylabel">Amount</label>
